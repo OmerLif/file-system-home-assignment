@@ -23,6 +23,7 @@ public abstract class FileSystemNode {
         validateName(name);
         this.name = name;
         this.creationDate = LocalDateTime.now();
+        this.parent = null; // Explicitly set parent to null, this will be updated when the node is added to a directory by using setParent()
     }
 
     /**
