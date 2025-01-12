@@ -21,17 +21,6 @@ public class Directory extends FileSystemNode {
         super(name);
     }
 
-
-    /**
-     * Creates a new directory with the given name.
-     * @param name The name of the directory
-     * @param parent The parent directory
-     * @throws InvalidNameException if the name is invalid
-     */
-    public Directory(String name, Directory parent) throws InvalidNameException {
-        super(name, parent);
-    }
-
     public void addChild(FileSystemNode child) {
         children.put(child.getName(), child);
         child.setParent(this);

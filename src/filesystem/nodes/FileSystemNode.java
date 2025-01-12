@@ -12,7 +12,7 @@ public abstract class FileSystemNode {
     private static final int MAX_NAME_LENGTH = 32;
     private final String name;
     private final LocalDateTime creationDate;
-    private Directory parent;
+    private FileSystemNode parent;
 
     /**
      * FileSystemNode Ctor.
@@ -23,19 +23,6 @@ public abstract class FileSystemNode {
         validateName(name);
         this.name = name;
         this.creationDate = LocalDateTime.now();
-    }
-
-    /**
-     * FileSystemNode Ctor with parent node included.
-     * @param name
-     * @param parent
-     * @throws InvalidNameException
-     */
-    public FileSystemNode(String name, Directory parent) throws InvalidNameException {
-        validateName(name);
-        this.name = name;
-        this.creationDate = LocalDateTime.now();
-        this.parent = parent;
     }
 
     /**
@@ -65,11 +52,11 @@ public abstract class FileSystemNode {
         return creationDate;
     }
 
-    public Directory getParent() {
+    public FileSystemNode getParent() {
         return parent;
     }
 
-    public void setParent(Directory parent) {
+    public void setParent(FileSystemNode parent) {
         this.parent = parent;
     }
 

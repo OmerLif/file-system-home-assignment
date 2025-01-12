@@ -163,9 +163,9 @@ public class BasicFileSystemManager implements FileSystemManager {
         }
 
         // Remove from parent's children
-        Directory parent = nodeToDelete.getParent();
-        if (parent != null) {
-            parent.removeChild(nodeToDelete);
+        FileSystemNode parent = nodeToDelete.getParent();
+        if (parent instanceof Directory) {
+            ((Directory) parent).removeChild(nodeToDelete);
         }
 
         // If it's a directory, recursively delete all contents
