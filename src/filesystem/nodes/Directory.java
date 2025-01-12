@@ -1,6 +1,7 @@
-package filesystem;
+package filesystem.nodes;
 
-import exceptions.InvalidNameException;
+import filesystem.exceptions.nodes.InvalidNameException;
+
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -11,8 +12,24 @@ import java.util.HashMap;
 public class Directory extends FileSystemNode {
     private final HashMap<String, FileSystemNode> children = new HashMap<>();
 
+    /**
+     * Creates a new directory with the given name.
+     * @param name The name of the directory
+     * @throws InvalidNameException if the name is invalid
+     */
     public Directory(String name) throws InvalidNameException {
         super(name);
+    }
+
+
+    /**
+     * Creates a new directory with the given name.
+     * @param name The name of the directory
+     * @param parent The parent directory
+     * @throws InvalidNameException if the name is invalid
+     */
+    public Directory(String name, Directory parent) throws InvalidNameException {
+        super(name, parent);
     }
 
     public void addChild(FileSystemNode child) {
@@ -29,8 +46,4 @@ public class Directory extends FileSystemNode {
         return children.values();
     }
 
-    @Override
-    public String toString() {
-        return String.format("%s [created=%s]", getName(), getCreationDate());
-    }
 }

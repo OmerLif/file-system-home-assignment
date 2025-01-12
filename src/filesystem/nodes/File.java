@@ -1,23 +1,21 @@
-package filesystem;
+package filesystem.nodes;
 
-import exceptions.FileSystemNodeException;
-import exceptions.InvalidFileSizeException;
+import filesystem.exceptions.FileSystemException;
+import filesystem.exceptions.nodes.InvalidFileSizeException;
 
 /**
  * Represents a file in the file system.
- * Files have a name, creation date, and size.
  */
 public class File extends FileSystemNode {
     private final long size;
 
     /**
-     * Creates a new File with the specified name and size.
-     *
+     * Creates a new file with the given name and size.
      * @param name The name of the file
      * @param size The size of the file in bytes
-     * @throws FileSystemNodeException if the name is invalid or the size is negative
+     * @throws FileSystemException if the size is negative
      */
-    public File(String name, int size) throws FileSystemNodeException {
+    public File(String name, long size) throws FileSystemException {
         super(name);
         validateSize(size);
         this.size = size;
@@ -29,8 +27,8 @@ public class File extends FileSystemNode {
      * @param size The size to validate
      * @throws InvalidFileSizeException if the size is negative
      */
-    private void validateSize(int size) throws InvalidFileSizeException {
-        if (size < 0) {
+    private static void validateSize(long size) throws InvalidFileSizeException {
+        if (size <= 0) {
             throw new InvalidFileSizeException(
                     String.format("File size cannot be negative: %d", size)
             );

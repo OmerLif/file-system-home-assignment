@@ -1,10 +1,9 @@
-import exceptions.DirectoryNotFoundException;
-import exceptions.FileSystemNodeException;
-import exceptions.NameAlreadyExistsException;
-import filesystem.BasicFileSystemManager;
+import filesystem.exceptions.manager.DirectoryNotFoundException;
+import filesystem.exceptions.FileSystemException;
+import filesystem.exceptions.manager.NameAlreadyExistsException;
+import filesystem.operations.BasicFileSystemManager;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+// Client code example to demonstrate the usage of the file system manager
 public class Main {
     public static void main(String[] args) {
         try {
@@ -19,7 +18,7 @@ public class Main {
             // Add files
             fileSystemManager.addFile("Documents", "resume.docx", 500);
             fileSystemManager.addFile("Documents", "budget.xlsx", 1200);
-            fileSystemManager.addFile("Pictures", "vacation.jpg", 3000);
+            fileSystemManager.addFile("Pictures", "vacation.jpg", 6400);
             fileSystemManager.addFile("Pictures", "profile_pic.jpg", 3000);
             fileSystemManager.addFile("Work", "project.docx", 800);
 
@@ -41,7 +40,7 @@ public class Main {
             // Attempt to delete a non-existent file
             try {
                 fileSystemManager.delete("non_existent_file.txt");
-            } catch (FileSystemNodeException e) {
+            } catch (FileSystemException e) {
                 System.err.println("Error: " + e.getMessage());
             }
 
@@ -61,15 +60,30 @@ public class Main {
 
 
             // Delete a directory
-            System.out.println("\nDeleting 'Documents dir'...");
+            System.out.println("\nDeleting 'Work dir'...");
             fileSystemManager.delete("Work");
+            // Display the file system after deletion
+            System.out.println("\nFile System Structure After Deletion:");
+            fileSystemManager.showFileSystem();
+
+            // Re-add the deleted directory and file
+            fileSystemManager.addDir("Documents", "Work");
+            fileSystemManager.addFile("Work", "project.docx", 800);
+            fileSystemManager.addFile("Work", "project2.docx", 800);
+
+            fileSystemManager.showFileSystem();
+
+            // Delete a directory with subdirectories and files
+            System.out.println("\nDeleting 'Documents dir'...");
+            fileSystemManager.delete("Documents");
             // Display the file system after deletion
             System.out.println("\nFile System Structure After Deletion:");
             fileSystemManager.showFileSystem();
 
 
 
-        } catch (FileSystemNodeException e) {
+
+        } catch (FileSystemException e) {
             System.err.println("Unexpected Error: " + e.getMessage());
         }
     }

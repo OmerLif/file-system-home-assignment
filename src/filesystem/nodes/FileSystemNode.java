@@ -1,6 +1,7 @@
-package filesystem;
+package filesystem.nodes;
 
-import exceptions.InvalidNameException;
+import filesystem.exceptions.nodes.InvalidNameException;
+
 import java.time.LocalDateTime;
 
 /**
@@ -14,24 +15,35 @@ public abstract class FileSystemNode {
     private Directory parent;
 
     /**
-     * Creates a new FileSystemNode with the specified name.
-     *
+     * FileSystemNode Ctor.
      * @param name The name of the file system node
      * @throws InvalidNameException if the name is null or exceeds 32 characters
      */
-    protected FileSystemNode(String name) throws InvalidNameException {
+    public FileSystemNode(String name) throws InvalidNameException {
         validateName(name);
         this.name = name;
         this.creationDate = LocalDateTime.now();
     }
 
     /**
-     * Validates the name according to file system rules.
-     *
+     * FileSystemNode Ctor with parent node included.
+     * @param name
+     * @param parent
+     * @throws InvalidNameException
+     */
+    public FileSystemNode(String name, Directory parent) throws InvalidNameException {
+        validateName(name);
+        this.name = name;
+        this.creationDate = LocalDateTime.now();
+        this.parent = parent;
+    }
+
+    /**
+     * Validates the name of the file system node.
      * @param name The name to validate
      * @throws InvalidNameException if the name is invalid
      */
-    private void validateName(String name) throws InvalidNameException {
+    private static void validateName(String name) throws InvalidNameException {
         if (name == null) {
             throw new InvalidNameException("Name cannot be null");
         }
@@ -57,7 +69,12 @@ public abstract class FileSystemNode {
         return parent;
     }
 
-    void setParent(Directory parent) {
+    public void setParent(Directory parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s [created=%s]", getName(), getCreationDate());
     }
 }
