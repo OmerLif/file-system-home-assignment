@@ -35,4 +35,9 @@ public class Directory extends FileSystemNode {
         return children.values();
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s [created=%s] [files=%s]", getName(), getCreationDate(), children.size());
+    }
+
 }
