@@ -40,7 +40,7 @@ import java.util.PriorityQueue;
  *    - Space Complexity: O(h)
  *
  * 6. public void delete(String name)
- *    - Time Complexity: O(N + FlogF) == O(N log N) (DFS traversal of the file system tree and removal from the max heap)
+ *    - Time Complexity: Max{O(N), O(F**2)} (DFS traversal of the file system tree and removal from the max heap)
  *    - Space Complexity: O(n + h) (n is the maximum number of nodes for a directory and h is the height of the file system tree)
  */
 
@@ -133,7 +133,7 @@ public class BasicFileSystemManager implements FileSystemManager {
     /**
      * Displays the file system structure using helper recursive function (DFS).
      * We choose this approach since File Systems are typically shallow and wide.
-     * Time complexity: O(N) where N is the number of nodes in the file system.
+     * Time complexity: O(N) where N is the number of nodes in the file system. In tree #Edges = #Nodes - 1, so O(N+E) = O(2N-1) = O(N).
      * Space complexity: O(h) where h is the depth of the file system tree.
      */
     public void showFileSystem() {
@@ -143,9 +143,9 @@ public class BasicFileSystemManager implements FileSystemManager {
     /**
      * Deletes a file or directory from the file system using a recursive approach (DFS).
      * We choose this approach since File Systems are typically shallow and wide.
-     * Time complexity: O(NlogN) where N is the number of nodes in the file system.
-     * Explanation: At the worst case we need to remove all the nodes from the max heap which takes O(FlogF) time. But in that case we will go over all the nodes
-     * in the file system tree which takes O(N) time. So the overall time complexity is O(N + FlogF) == O(NlogN).
+     * Time complexity: Max{O(N), O(F**2)} where N is the number of nodes in the file system and F is the number of files.
+     * Explanation: At the worst case we need to remove all the nodes from the max heap which takes O(F**2) time. But in that case we will go over all the nodes
+     * in the file system tree which takes O(N) time. So the overall time complexity is Max{O(N), O(F**2)}.
      * Space complexity: O(n + h) where n is the maximum number of nodes for a directory and h is the height of the file system tree.
      * Explanation: The space complexity is due to the recursive call stack and the copy of children in the deleteDirectoryContents method.
      * @param name
