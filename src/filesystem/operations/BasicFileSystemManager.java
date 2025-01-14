@@ -37,7 +37,7 @@ import java.util.*;
  *
  * 6. public void delete(String name)
  *    - Time Complexity: O(N).
- *    - Space Complexity: O(n + h) (n is the maximum number of nodes for a directory and h is the height of the file system tree)
+ *    - Space Complexity: O(h) (h is the height of the file system tree)
  */
 
 public class BasicFileSystemManager implements FileSystemManager {
@@ -141,8 +141,8 @@ public class BasicFileSystemManager implements FileSystemManager {
      * We choose this approach since File Systems are typically shallow and wide.
      * Time complexity: O(N) + O(F) = O(N) where N is the number of nodes in the file system and F is the number of files in the directory.
      * Explanation: At the worst case, we have to traverse and remove all nodes in the directory. And we have to update the largest file if it's removed.
-     * Space complexity: O(n + h) where n is the maximum number of nodes for a directory and h is the height of the file system tree.
-     * Explanation: The space complexity is due to the recursive call stack and the copy of children in the deleteDirectoryContents method.
+     * Space complexity: O(h) where h is the height of the file system tree.
+     * Explanation: The space complexity is due to the recursive call stack.
      * @param name
      * @throws FileSystemException
      */
@@ -158,7 +158,7 @@ public class BasicFileSystemManager implements FileSystemManager {
             throw new FileSystemException("Cannot delete root directory");
         }
 
-        // Remove from parent's children
+        // Remove from parent's children -> Now the node is unlinked from the file system tree and we can safely delete it and his children.
         FileSystemNode parent = nodeToDelete.getParent();
         if (parent instanceof Directory) {
             ((Directory) parent).removeChild(nodeToDelete);
@@ -180,6 +180,8 @@ public class BasicFileSystemManager implements FileSystemManager {
     }
 
     private void deleteDirectoryContents(Directory directory, boolean[] isBiggestFileRemoved) {
+        // We don't need to create a copy of the children list since we don't unlink the children from the parent we simply remove all of them
+        // from the directory and update the maps accordingly.
         for (FileSystemNode child : directory.getChildren()) {
             // Remove from maps
             directoryNameMap.remove(child.getName());
