@@ -6,7 +6,7 @@ import filesystem.exceptions.nodes.InvalidFileSizeException;
 /**
  * Represents a file in the file system.
  */
-public class File extends FileSystemNode {
+public class File extends FileSystemNode implements Comparable<File> {
     private final long size;
 
     /**
@@ -42,5 +42,10 @@ public class File extends FileSystemNode {
     @Override
     public String toString() {
         return String.format("%s [size=%d bytes, created=%s]", getName(), size, getCreationDate());
+    }
+
+    @Override
+    public int compareTo(File o) {
+        return Long.compare(size, o.size);
     }
 }
