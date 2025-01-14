@@ -61,7 +61,7 @@ Deletes a specified file or directory.
 ## Design Considerations
 - The file system is implemented as a tree structure, with directories containing files or subdirectories.
 - A `HashMap` is used for fast lookups.
-- A `PriorityQueue` is used to efficiently track the largest file.
+- A `largestFile Pointer` is used to efficiently track the largest file.
 - A `parent` node exists for each file or directory to support the deletion operation. In fact this created a double link-list kind of structure. This requires us to make sure we link/unlink between parent and child every time we add/delete a file or directory.
 - A `DFS` based traversal is used since file systems are usually shallow and wide which can make BFS memory inefficient.
 - A `FileSystemException` class is used as base custom exception class to handle all exceptions.

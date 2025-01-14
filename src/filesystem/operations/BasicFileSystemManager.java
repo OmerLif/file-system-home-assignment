@@ -3,15 +3,11 @@ package filesystem.operations;
 import filesystem.exceptions.FileSystemException;
 import filesystem.exceptions.manager.DirectoryNotFoundException;
 import filesystem.exceptions.manager.NameAlreadyExistsException;
-import filesystem.exceptions.nodes.InvalidNameException;
 import filesystem.nodes.Directory;
 import filesystem.nodes.File;
 import filesystem.nodes.FileSystemNode;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.*;
 
 
 /**
@@ -20,7 +16,7 @@ import java.util.PriorityQueue;
  * Method Signatures and Complexities Summary:
  *
  * 1. public void addFile(String parentDirName, String fileName, int fileSize)
- *    - Time Complexity: O(log F) (Insertion in the priority queue)
+ *    - Time Complexity: O(1) (Insertion in the HashMap)
  *    - Space Complexity: O(1)
  *
  * 2. public void addDir(String parentDirName, String dirName)
@@ -40,27 +36,29 @@ import java.util.PriorityQueue;
  *    - Space Complexity: O(h)
  *
  * 6. public void delete(String name)
- *    - Time Complexity: Max{O(N), O(F**2)} (DFS traversal of the file system tree and removal from the max heap)
+ *    - Time Complexity: O(N).
  *    - Space Complexity: O(n + h) (n is the maximum number of nodes for a directory and h is the height of the file system tree)
  */
 
 public class BasicFileSystemManager implements FileSystemManager {
 
-    private final FileSystemNode root;
-    private final HashMap<String, FileSystemNode> nameMap;
-    private final PriorityQueue<File> maxHeap;
+    private final Directory root;
+    private final HashMap<String, Directory> directoryNameMap;
+    private final HashMap<String, File> fileNameMap;
+    private File largestFile;
 
 
-    public BasicFileSystemManager() throws InvalidNameException {
+    public BasicFileSystemManager() throws FileSystemException {
         this.root = new Directory("root");
-        this.nameMap = new HashMap<>();
-        this.nameMap.put(root.getName(), root);
-        this.maxHeap = new PriorityQueue<>(Comparator.comparingLong(File::getSize).reversed());
+        this.directoryNameMap = new HashMap<>();
+        this.directoryNameMap.put(root.getName(), root);
+        this.fileNameMap = new HashMap<>();
+        this.largestFile = null;
     }
 
     /**
      * Adds a file to the file system.
-     * Time complexity: O(log F), where F is the number of files in the file system. The time complexity is due to the insertion operation in the priority queue.
+     * Time complexity: O(1), we are creating a new file adding him to his parent and fileName map and updating the largest file.
      * Space complexity: O(1) since we are only adding a file node.
      * @param parentDirName
      * @param fileName
@@ -75,13 +73,13 @@ public class BasicFileSystemManager implements FileSystemManager {
         // Add file while making sure a double link is established
         file.setParent(parent);
         parent.addChild(file);
-        maxHeap.add(file);
-        nameMap.put(fileName, file);
+        updateLargestFileAfterInsertion(file);
+        fileNameMap.put(fileName, file);
     }
 
     /**
      * Adds a directory to the file system.
-     * Time complexity: O(1) on average, as the directory is added to the parent directory's children map and the name map but not to the priority queue.
+     * Time complexity: O(1) on average, as the directory is added to the parent directory's children map and the directoryNameMap.
      * Space complexity: O(1) since we are only adding a directory node.
      * @param parentDirName
      * @param dirName
@@ -95,39 +93,37 @@ public class BasicFileSystemManager implements FileSystemManager {
         // Add directory while making sure a double link is established
         dir.setParent(parent);
         parent.addChild(dir);
-        nameMap.put(dirName, dir);
+        directoryNameMap.put(dirName, dir);
     }
 
     /**
      * Returns the name of the biggest file in the file system.
-     * Time complexity: O(1) since we are just peeking at the top of the max heap.
+     * Time complexity: O(1) since we are just returning the name of the largest file node.
      * Space complexity: O(1) since we are not using any additional space.
      * @return String
      */
     public String getBiggestFile() throws FileSystemException {
-        if (maxHeap.isEmpty()) {
+        if (largestFile == null) {
             throw new FileSystemException("No files found in the file system, can't get the biggest file.");
         }
-        return maxHeap.peek().getName();
+        return largestFile.getName();
     }
 
     /**
      * Returns the size of a file in the file system.
-     * Time complexity: O(1) since we are just looking up the file in the name map.
+     * Time complexity: O(1) since we are just looking up the file in the fileNameMap.
      * Space complexity: O(1) since we are not using any additional space.
      * @param fileName
      * @return long
      * @throws FileSystemException
      */
     public long getFileSize(String fileName) throws FileSystemException {
-        FileSystemNode node = nameMap.get(fileName);
+        File node = fileNameMap.get(fileName);
+        System.out.println(fileNameMap);
         if (node == null) {
             throw new FileSystemException(String.format("Node not found: %s", fileName));
         }
-        if (node instanceof File) {
-            return ((File) node).getSize();
-        }
-        throw new FileSystemException(String.format("Node is not a file: %s", fileName));
+        return node.getSize();
     }
 
     /**
@@ -143,9 +139,8 @@ public class BasicFileSystemManager implements FileSystemManager {
     /**
      * Deletes a file or directory from the file system using a recursive approach (DFS).
      * We choose this approach since File Systems are typically shallow and wide.
-     * Time complexity: Max{O(N), O(F**2)} where N is the number of nodes in the file system and F is the number of files.
-     * Explanation: At the worst case we need to remove all the nodes from the max heap which takes O(F**2) time. But in that case we will go over all the nodes
-     * in the file system tree which takes O(N) time. So the overall time complexity is Max{O(N), O(F**2)}.
+     * Time complexity: O(N) + O(F) = O(N) where N is the number of nodes in the file system and F is the number of files in the directory.
+     * Explanation: At the worst case, we have to traverse and remove all nodes in the directory. And we have to update the largest file if it's removed.
      * Space complexity: O(n + h) where n is the maximum number of nodes for a directory and h is the height of the file system tree.
      * Explanation: The space complexity is due to the recursive call stack and the copy of children in the deleteDirectoryContents method.
      * @param name
@@ -153,7 +148,7 @@ public class BasicFileSystemManager implements FileSystemManager {
      */
     public void delete(String name) throws FileSystemException {
         // Check if node exists
-        FileSystemNode nodeToDelete = nameMap.get(name);
+        FileSystemNode nodeToDelete = (fileNameMap.get(name) != null) ? fileNameMap.get(name) : directoryNameMap.get(name);
         if (nodeToDelete == null) {
             throw new FileSystemException(String.format("Node not found: %s", name));
         }
@@ -169,40 +164,51 @@ public class BasicFileSystemManager implements FileSystemManager {
             ((Directory) parent).removeChild(nodeToDelete);
         }
 
+        boolean[] isBiggestFileRemoved = new boolean[1];
         // If it's a directory, recursively delete all contents
         if (nodeToDelete instanceof Directory) {
-            deleteDirectoryContents((Directory) nodeToDelete);
-        } else if (nodeToDelete instanceof File) {
-            // If it's a file, remove from maxHeap
-            maxHeap.remove(nodeToDelete);
+            deleteDirectoryContents((Directory) nodeToDelete, isBiggestFileRemoved);
+            directoryNameMap.remove(name);
+        } else {
+            fileNameMap.remove(name);
         }
 
-        // Remove from nameMap
-        nameMap.remove(name);
+        if (isBiggestFileRemoved[0] || Objects.equals(nodeToDelete, largestFile)) {
+            updateLargestFileAfterDeletion();
+        }
+
     }
 
-
-    private void deleteDirectoryContents(Directory directory) {
-        // Create a copy of children to avoid concurrent modification
-        var children = new ArrayList<>(directory.getChildren());
-
-        for (FileSystemNode child : children) {
-            // Remove from nameMap
-            nameMap.remove(child.getName());
-
+    private void deleteDirectoryContents(Directory directory, boolean[] isBiggestFileRemoved) {
+        for (FileSystemNode child : directory.getChildren()) {
+            // Remove from maps
+            directoryNameMap.remove(child.getName());
+            fileNameMap.remove(child.getName());
             // If child is a directory, recursively delete its contents
             if (child instanceof Directory) {
-                deleteDirectoryContents((Directory) child);
-            } else if (child instanceof File) {
-                // If child is a file, remove from maxHeap
-                maxHeap.remove(child);
+                deleteDirectoryContents((Directory) child, isBiggestFileRemoved);
+            } else if (child instanceof File && child == largestFile) {
+                isBiggestFileRemoved[0] = true;
             }
         }
     }
 
+    private void updateLargestFileAfterDeletion() {
+        for (File file : fileNameMap.values()) {
+            if (largestFile == null || file.getSize() >= largestFile.getSize()) {
+                largestFile = file;
+            }
+        }
+    }
+
+    private void updateLargestFileAfterInsertion(File file) {
+        if (largestFile == null || file.getSize() >= largestFile.getSize()) {
+            largestFile = file;
+        }
+    }
 
     private Directory getParentDirectory(String parentDirName) throws DirectoryNotFoundException {
-        Directory parent = (Directory) nameMap.get(parentDirName);
+        Directory parent = directoryNameMap.get(parentDirName);
         if (parent == null) {
             throw new DirectoryNotFoundException(String.format("Parent directory not found: %s", parentDirName));
         }
@@ -210,7 +216,7 @@ public class BasicFileSystemManager implements FileSystemManager {
     }
 
     private void checkFileExistence(String fileName) throws NameAlreadyExistsException {
-        if (nameMap.containsKey(fileName)) {
+        if (directoryNameMap.containsKey(fileName) || fileNameMap.containsKey(fileName)) {
             throw new NameAlreadyExistsException(String.format("File already exists: %s", fileName));
         }
     }
