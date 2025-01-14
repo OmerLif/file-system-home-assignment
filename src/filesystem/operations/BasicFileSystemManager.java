@@ -8,10 +8,7 @@ import filesystem.nodes.Directory;
 import filesystem.nodes.File;
 import filesystem.nodes.FileSystemNode;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.*;
 
 
 /**
@@ -40,7 +37,7 @@ import java.util.PriorityQueue;
  *    - Space Complexity: O(h)
  *
  * 6. public void delete(String name)
- *    - Time Complexity: Max{O(N), O(F**2)} (DFS traversal of the file system tree and removal from the max heap)
+ *    - Time Complexity: Max{O(N), O(FlogF)} (DFS traversal of the file system tree and removal from the BST)
  *    - Space Complexity: O(n + h) (n is the maximum number of nodes for a directory and h is the height of the file system tree)
  */
 
@@ -48,19 +45,19 @@ public class BasicFileSystemManager implements FileSystemManager {
 
     private final FileSystemNode root;
     private final HashMap<String, FileSystemNode> nameMap;
-    private final PriorityQueue<File> maxHeap;
+    private final TreeSet<File> maxHeap;
 
 
     public BasicFileSystemManager() throws InvalidNameException {
         this.root = new Directory("root");
         this.nameMap = new HashMap<>();
         this.nameMap.put(root.getName(), root);
-        this.maxHeap = new PriorityQueue<>(Comparator.comparingLong(File::getSize).reversed());
+        this.maxHeap = new TreeSet<>();
     }
 
     /**
      * Adds a file to the file system.
-     * Time complexity: O(log F), where F is the number of files in the file system. The time complexity is due to the insertion operation in the priority queue.
+     * Time complexity: O(log F), where F is the number of files in the file system. The time complexity is due to the insertion operation in the BST.
      * Space complexity: O(1) since we are only adding a file node.
      * @param parentDirName
      * @param fileName
@@ -108,7 +105,7 @@ public class BasicFileSystemManager implements FileSystemManager {
         if (maxHeap.isEmpty()) {
             throw new FileSystemException("No files found in the file system, can't get the biggest file.");
         }
-        return maxHeap.peek().getName();
+        return maxHeap.last().getName();
     }
 
     /**
@@ -143,9 +140,9 @@ public class BasicFileSystemManager implements FileSystemManager {
     /**
      * Deletes a file or directory from the file system using a recursive approach (DFS).
      * We choose this approach since File Systems are typically shallow and wide.
-     * Time complexity: Max{O(N), O(F**2)} where N is the number of nodes in the file system and F is the number of files.
-     * Explanation: At the worst case we need to remove all the nodes from the max heap which takes O(F**2) time. But in that case we will go over all the nodes
-     * in the file system tree which takes O(N) time. So the overall time complexity is Max{O(N), O(F**2)}.
+     * Time complexity: Max{O(N), O(FlogF)} where N is the number of nodes in the file system and F is the number of files.
+     * Explanation: At the worst case we need to remove all the nodes from the BST which takes O(FlogF) time. But in that case we will go over all the nodes
+     * in the file system tree which takes O(N) time. So the overall time complexity is Max{O(N), O(FlogF)}.
      * Space complexity: O(n + h) where n is the maximum number of nodes for a directory and h is the height of the file system tree.
      * Explanation: The space complexity is due to the recursive call stack and the copy of children in the deleteDirectoryContents method.
      * @param name
