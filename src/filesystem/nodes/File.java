@@ -3,6 +3,8 @@ package filesystem.nodes;
 import filesystem.exceptions.FileSystemException;
 import filesystem.exceptions.nodes.InvalidFileSizeException;
 
+import java.util.Objects;
+
 /**
  * Represents a file in the file system.
  */
@@ -47,5 +49,18 @@ public class File extends FileSystemNode implements Comparable<File> {
     @Override
     public int compareTo(File o) {
         return Long.compare(size, o.size);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        File other = (File) obj;
+        return size == other.size && getName().equals(other.getName()) && getCreationDate().equals(other.getCreationDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getSize(), getCreationDate());
     }
 }
